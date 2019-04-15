@@ -1,0 +1,46 @@
+{
+    "namespace": "gov.usgs.wma",
+    "name": "site",
+    "type": "record",
+    "fields": [
+        {"name": "agency_cd", "type": {
+            "type": "string"
+        }},
+	{"name": "site_no", "type": {
+            "type": "string",
+	    "arg.properties": {
+                "regex": "[0-9]+"
+            }
+        }},
+	{"name": "station_nm", "type": {
+            "type": "string"
+        }},
+	{"name": "site_tp_cd", "type": {
+            "type": "string"
+        }},
+	{"name": "dec_lat_va", "type": {
+            "type": "long"
+        }},
+	{"name": "dec_long_va", "type": {
+            "type": "long"
+        }},
+	{"name": "coord_acy_cd", "type": {
+            "type": "string"
+        }},
+	{"name": "dec_coord_datum_cd", "type": {
+            "type": "string"
+        }},
+	{"name": "alt_va", "type": {
+            "type": "string"
+        }},
+	{"name": "alt_acy_va", "type": {
+            "type": "string"
+        }},
+	{"name": "alt_datum_cd", "type": {
+            "type": "string"
+        }},
+	{"name": "huc_cd", "type": {
+            "type": "string"
+        }}
+    ]
+}
