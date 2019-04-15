@@ -5,5 +5,7 @@
         "http://www.puppycrawl.com/dtds/suppressions_1_1.dtd">
 
 <suppressions>
-
+  <!-- TODO: might want to re-enable some Java checks in the future. See 
+    http://checkstyle.sourceforge.net/config_filters.html#SuppressionFilter -->
+  <suppress files=".+\.(?:java)$" checks=".*" />
 </suppressions>
