@@ -255,4 +255,5 @@ public class DatagenTaskTest {
       throw new ConnectException("Unable to read the '" + schemaFilename + "' schema file", e);
     }
   }
-}
+  
+} // DatagenTaskTest
