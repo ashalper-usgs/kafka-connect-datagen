@@ -81,5 +81,4 @@ public class DatagenConnectorConfig extends AbstractConfig {
     return this.getString(QUICKSTART_CONF);
   }
 
-}
-
+} // DatagenConnectorConfig
