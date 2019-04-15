@@ -4,3 +4,8 @@ target/*
 *.iml
 .idea/
 .ipr
+/target/
+/.project
+/.classpath
+/.checkstyle
+/.settings/
