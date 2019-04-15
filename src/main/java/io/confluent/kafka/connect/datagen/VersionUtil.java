@@ -17,6 +17,7 @@
 package io.confluent.kafka.connect.datagen;
 
 class VersionUtil {
+	
   public static String getVersion() {
     try {
       return VersionUtil.class.getPackage().getImplementationVersion();
@@ -24,4 +25,5 @@ class VersionUtil {
       return "0.0.0.0";
     }
   }
-}
+  
+} // VersionUtil
