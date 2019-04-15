@@ -24,53 +24,51 @@ import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.common.config.ConfigException;
 import org.apache.kafka.connect.connector.Task;
 import org.apache.kafka.connect.source.SourceConnector;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class DatagenConnector extends SourceConnector {
 
-  private static Logger log = LoggerFactory.getLogger(DatagenConnector.class);
-  private DatagenConnectorConfig config;
-  private Map<String, String> props;
+	@SuppressWarnings("unused")
+	private DatagenConnectorConfig config;
+	private Map<String, String> props;
 
-  @Override
-  public String version() {
-    return VersionUtil.getVersion();
-  }
+	@Override
+	public String version() {
+		return VersionUtil.getVersion();
+	}
 
-  @Override
-  public void start(Map<String, String> props) {
-    try {
-      this.props = props;
-      config = new DatagenConnectorConfig(props);
-    } catch (ConfigException e) {
-      throw new ConfigException(
-          "Datagen connector could not start because of an error in the configuration: ",
-          e
-      );
-    }
-  }
+	@Override
+	public void start(Map<String, String> props) {
+		try {
+			this.props = props;
+			config = new DatagenConnectorConfig(props);
+		} catch (ConfigException e) {
+			throw new ConfigException(
+				"Datagen connector could not start because of an error in the configuration: ", e
+			);
+		}
+	}
 
-  @Override
-  public Class<? extends Task> taskClass() {
-    return DatagenTask.class;
-  }
+	@Override
+	public Class<? extends Task> taskClass() {
+		return DatagenTask.class;
+	}
 
-  @Override
-  public List<Map<String, String>> taskConfigs(int maxTasks) {
-    List<Map<String, String>> taskConfigs = new ArrayList<>();
-    for (int i = 0; i < maxTasks; i++) {
-      taskConfigs.add(this.props);
-    }
-    return taskConfigs;
-  }
+	@Override
+	public List<Map<String, String>> taskConfigs(int maxTasks) {
+		List<Map<String, String>> taskConfigs = new ArrayList<>();
+		for (int i = 0; i < maxTasks; i++) {
+			taskConfigs.add(this.props);
+		}
+		return taskConfigs;
+	}
 
-  @Override
-  public void stop() {
-  }
+	@Override
+	public void stop() {
+	}
 
-  @Override
-  public ConfigDef config() {
-    return DatagenConnectorConfig.conf();
-  }
-}
+	@Override
+	public ConfigDef config() {
+		return DatagenConnectorConfig.conf();
+	}
+	
+} // DatagenConnector
