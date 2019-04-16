@@ -52,7 +52,6 @@ public class DatagenTask extends SourceTask {
 
 	private DatagenConnectorConfig config;
 	private String topic;
-	private long maxInterval;
 	private int maxRecords;
 	private long count = 0L;
 	private String schemaFilename;
@@ -94,7 +93,6 @@ public class DatagenTask extends SourceTask {
 	public void start(Map<String, String> props) {
 		config = new DatagenConnectorConfig(props);
 		topic = config.getKafkaTopic();
-		maxInterval = config.getMaxInterval();
 		maxRecords = config.getIterations();
 		schemaFilename = config.getSchemaFilename();
 		schemaKeyField = config.getSchemaKeyfield();
@@ -129,27 +127,24 @@ public class DatagenTask extends SourceTask {
 	@Override
 	public List<SourceRecord> poll() throws InterruptedException {
 
-		if (0 < maxInterval) {
-			try {
-				Thread.sleep((long) (maxInterval * Math.random()));
-			} catch (InterruptedException e) {
-				Thread.interrupted();
-				return null;
-			}
-		}
-
-		// TODO: factor out this bit
-		final Object generatedObject = generator.generate();
-		if (!(generatedObject instanceof GenericRecord)) {
-			throw new RuntimeException(String.format(
-					"Expected Avro Random Generator to return instance of GenericRecord, found %s instead",
-					generatedObject.getClass().getName()));
-		}
-		final GenericRecord randomAvroMessage = (GenericRecord) generatedObject;
-
+		final GenericRecord message = new Record(avroSchema);
+		// TODO: replace with results from HTTP GET
+		message.put("agency_cd", "USGS");
+		message.put("site_no", "01646500");
+		message.put("station_nm", "POTOMAC RIVER NEAR WASH, DC LITTLE FALLS PUMP STA");
+		message.put("site_tp_cd", "ST");
+		message.put("dec_lat_va", 38.94977778D);
+		message.put("dec_long_va", -77.12763889D);
+		message.put("coord_acy_cd", "S");
+		message.put("dec_coord_datum_cd", "NAD83");
+		message.put("alt_va", "37.20");
+		message.put("alt_acy_va", ".1");
+		message.put("alt_datum_cd", "NAVD88");
+		message.put("huc_cd", "02070008");
+		
 		final List<Object> genericRowValues = new ArrayList<>();
 		for (org.apache.avro.Schema.Field field : avroSchema.getFields()) {
-			final Object value = randomAvroMessage.get(field.name());
+			final Object value = message.get(field.name());
 			if (value instanceof Record) {
 				final Record record = (Record) value;
 				final Object ksqlValue = avroData.toConnectData(record.getSchema(), record).value();
@@ -163,15 +158,14 @@ public class DatagenTask extends SourceTask {
 		// Key
 		String keyString = "";
 		if (!schemaKeyField.isEmpty()) {
-			SchemaAndValue schemaAndValue = avroData.toConnectData(
-					randomAvroMessage.getSchema().getField(schemaKeyField).schema(),
-					randomAvroMessage.get(schemaKeyField));
+			SchemaAndValue schemaAndValue = avroData
+					.toConnectData(message.getSchema().getField(schemaKeyField).schema(), message.get(schemaKeyField));
 			keyString = schemaAndValue.value().toString();
 		}
 
 		// Value
 		final org.apache.kafka.connect.data.Schema messageSchema = avroData.toConnectSchema(avroSchema);
-		final Object messageValue = avroData.toConnectData(avroSchema, randomAvroMessage).value();
+		final Object messageValue = avroData.toConnectData(avroSchema, message).value();
 
 		if (0 < maxRecords && maxRecords <= count) {
 			throw new ConnectException(
