@@ -16,7 +16,14 @@
 
 package io.confluent.kafka.connect.datagen;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -39,6 +46,11 @@ import org.apache.kafka.connect.source.SourceTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.opencsv.CSVParser;
+import com.opencsv.CSVParserBuilder;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderBuilder;
+
 import io.confluent.avro.random.generator.Generator;
 import io.confluent.connect.avro.AvroData;
 
@@ -51,9 +63,9 @@ public class WaterServicesTask extends SourceTask {
 	private static final Map<String, ?> SOURCE_OFFSET = Collections.emptyMap();
 
 	private WaterServicesConnectorConfig config;
+	private String url;
+	private int responseCode = -1;
 	private String topic;
-	private int maxRecords;
-	private long count = 0L;
 	private String schemaFilename;
 	private String schemaKeyField;
 	private Entity entity;
@@ -61,7 +73,7 @@ public class WaterServicesTask extends SourceTask {
 	private org.apache.avro.Schema avroSchema;
 	private org.apache.kafka.connect.data.Schema ksqlSchema;
 	private AvroData avroData;
-
+	
 	protected enum Entity {
 		// TODO: SITE key is really (agency_cd,site_no)
 		USERS("users_schema.avro", "userid"), PAGEVIEWS("pageviews_schema.avro", "viewtime"),
@@ -92,8 +104,8 @@ public class WaterServicesTask extends SourceTask {
 	@Override
 	public void start(Map<String, String> props) {
 		config = new WaterServicesConnectorConfig(props);
+		url = config.getURL();
 		topic = config.getKafkaTopic();
-		maxRecords = config.getIterations();
 		schemaFilename = config.getSchemaFilename();
 		schemaKeyField = config.getSchemaKeyfield();
 
@@ -117,66 +129,89 @@ public class WaterServicesTask extends SourceTask {
 		}
 
 		avroSchema = generator.schema();
-		log.info("avroSchema = {}", avroSchema.toString());
 		avroData = new AvroData(1);
-		log.info("avroData = {}", avroData.toString());
 		ksqlSchema = avroData.toConnectSchema(avroSchema);
-		log.info("ksqlSchema = {}", ksqlSchema.toString());
 	}
 
 	@Override
 	public List<SourceRecord> poll() throws InterruptedException {
 
-		final GenericRecord message = new Record(avroSchema);
-		// TODO: replace with results from HTTP GET
-		message.put("agency_cd", "USGS");
-		message.put("site_no", "01646500");
-		message.put("station_nm", "POTOMAC RIVER NEAR WASH, DC LITTLE FALLS PUMP STA");
-		message.put("site_tp_cd", "ST");
-		message.put("dec_lat_va", 38.94977778D);
-		message.put("dec_long_va", -77.12763889D);
-		message.put("coord_acy_cd", "S");
-		message.put("dec_coord_datum_cd", "NAD83");
-		message.put("alt_va", "37.20");
-		message.put("alt_acy_va", ".1");
-		message.put("alt_datum_cd", "NAVD88");
-		message.put("huc_cd", "02070008");
+		if (responseCode != HttpURLConnection.HTTP_OK)
+			return null;
+
+		InputStream stream;
+		HttpURLConnection connection;
+		try {
+			URL urlObject = new URL(url);
+			connection = (HttpURLConnection) urlObject.openConnection();
+			connection.setRequestMethod("GET");
+			stream = connection.getInputStream();
+		} catch (MalformedURLException e) {
+			log.error(e.getMessage());
+			return null;
+		} catch (IOException e) {
+			log.error(e.getMessage());
+			return null;
+		}
 		
-		final List<Object> genericRowValues = new ArrayList<>();
-		for (org.apache.avro.Schema.Field field : avroSchema.getFields()) {
-			final Object value = message.get(field.name());
-			if (value instanceof Record) {
-				final Record record = (Record) value;
-				final Object ksqlValue = avroData.toConnectData(record.getSchema(), record).value();
-				Object optionValue = getOptionalValue(ksqlSchema.field(field.name()).schema(), ksqlValue);
-				genericRowValues.add(optionValue);
-			} else {
-				genericRowValues.add(value);
-			}
-		}
-
-		// Key
-		String keyString = "";
-		if (!schemaKeyField.isEmpty()) {
-			SchemaAndValue schemaAndValue = avroData
-					.toConnectData(message.getSchema().getField(schemaKeyField).schema(), message.get(schemaKeyField));
-			keyString = schemaAndValue.value().toString();
-		}
-
-		// Value
-		final org.apache.kafka.connect.data.Schema messageSchema = avroData.toConnectSchema(avroSchema);
-		final Object messageValue = avroData.toConnectData(avroSchema, message).value();
-
-		if (0 < maxRecords && maxRecords <= count) {
-			throw new ConnectException(
-					String.format("Stopping connector: generated the configured %d number of messages", count));
-		}
+		BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+		final CSVParser parser = new CSVParserBuilder().withSeparator('\t').withIgnoreQuotations(true).build();
+		final CSVReader csvReader = new CSVReaderBuilder(reader).withCSVParser(parser).build();
 
 		final List<SourceRecord> records = new ArrayList<>();
-		SourceRecord record = new SourceRecord(SOURCE_PARTITION, SOURCE_OFFSET, topic, KEY_SCHEMA, keyString,
-				messageSchema, messageValue);
-		records.add(record);
-		count += records.size();
+		
+		try {
+			String[] field;
+			while ((field = csvReader.readNext()) != null) {
+				final GenericRecord message = new Record(avroSchema);
+				final List<Object> genericRowValues = new ArrayList<>();
+				
+				// TODO: seems like we can put schema code outside while loop
+				for (org.apache.avro.Schema.Field schemaField : avroSchema.getFields()) {
+					final Object value = message.get(schemaField.name());
+					if (value instanceof Record) {
+						final Record record = (Record) value;
+						final Object ksqlValue = avroData.toConnectData(record.getSchema(), record).value();
+						Object optionValue = getOptionalValue(ksqlSchema.field(schemaField.name()).schema(), ksqlValue);
+						genericRowValues.add(optionValue);
+					} else {
+						genericRowValues.add(value);
+					}
+				}
+
+				// Key
+				String keyString = "";
+				if (!schemaKeyField.isEmpty()) {
+					SchemaAndValue schemaAndValue = avroData
+							.toConnectData(message.getSchema().getField(schemaKeyField).schema(), message.get(schemaKeyField));
+					keyString = schemaAndValue.value().toString();
+				}
+
+				// Value
+				// TODO: we can parse these column names from RDB header row
+				message.put("agency_cd", field[0]);
+				message.put("site_no", field[1]);
+				message.put("station_nm", field[2]);
+				message.put("site_tp_cd", field[3]);
+				message.put("dec_lat_va", Double.parseDouble(field[4]));
+				message.put("dec_long_va", Double.parseDouble(field[5]));
+				message.put("coord_acy_cd", field[6]);
+				message.put("dec_coord_datum_cd", field[7]);
+				message.put("alt_va", field[8]);
+				message.put("alt_acy_va", ".1");
+				message.put("alt_datum_cd", field[9]);
+				message.put("huc_cd", field[10]);
+				final Object messageValue = avroData.toConnectData(avroSchema, message).value();
+
+				SourceRecord record = new SourceRecord(SOURCE_PARTITION, SOURCE_OFFSET, topic, KEY_SCHEMA, keyString,
+						avroData.toConnectSchema(avroSchema), messageValue);
+				records.add(record);
+			}
+			responseCode = connection.getResponseCode();
+		} catch (IOException e) {
+			log.error(e.getMessage());
+			return null;
+		}
 		return records;
 	}
 
