@@ -10,9 +10,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class DatagenTaskTest {
+public class WaterServicesTaskTest {
 
-	static DatagenTask task = new DatagenTask();
+	static WaterServicesTask task = new WaterServicesTask();
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -48,4 +48,4 @@ public class DatagenTaskTest {
 		return;
 	}
 
-} // DatagenTaskTest
+} // WaterServicesTaskTest

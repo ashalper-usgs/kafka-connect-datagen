@@ -25,10 +25,10 @@ import org.apache.kafka.common.config.ConfigException;
 import org.apache.kafka.connect.connector.Task;
 import org.apache.kafka.connect.source.SourceConnector;
 
-public class DatagenConnector extends SourceConnector {
+public class WaterServicesConnector extends SourceConnector {
 
 	@SuppressWarnings("unused")
-	private DatagenConnectorConfig config;
+	private WaterServicesConnectorConfig config;
 	private Map<String, String> props;
 
 	@Override
@@ -40,17 +40,16 @@ public class DatagenConnector extends SourceConnector {
 	public void start(Map<String, String> props) {
 		try {
 			this.props = props;
-			config = new DatagenConnectorConfig(props);
+			config = new WaterServicesConnectorConfig(props);
 		} catch (ConfigException e) {
-			throw new ConfigException(
-				"Datagen connector could not start because of an error in the configuration: ", e
-			);
+			throw new ConfigException(this.getClass().getSimpleName()
+					+ " connector could not start because of an error in the configuration: ", e);
 		}
 	}
 
 	@Override
 	public Class<? extends Task> taskClass() {
-		return DatagenTask.class;
+		return WaterServicesTask.class;
 	}
 
 	@Override
@@ -68,7 +67,7 @@ public class DatagenConnector extends SourceConnector {
 
 	@Override
 	public ConfigDef config() {
-		return DatagenConnectorConfig.conf();
+		return WaterServicesConnectorConfig.conf();
 	}
 	
-} // DatagenConnector
+} // WaterServicesConnector

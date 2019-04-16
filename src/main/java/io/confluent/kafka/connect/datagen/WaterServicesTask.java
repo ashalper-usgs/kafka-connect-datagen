@@ -42,15 +42,15 @@ import org.slf4j.LoggerFactory;
 import io.confluent.avro.random.generator.Generator;
 import io.confluent.connect.avro.AvroData;
 
-public class DatagenTask extends SourceTask {
+public class WaterServicesTask extends SourceTask {
 
-	static final Logger log = LoggerFactory.getLogger(DatagenTask.class);
+	static final Logger log = LoggerFactory.getLogger(WaterServicesTask.class);
 
 	private static final Schema KEY_SCHEMA = Schema.STRING_SCHEMA;
 	private static final Map<String, ?> SOURCE_PARTITION = Collections.emptyMap();
 	private static final Map<String, ?> SOURCE_OFFSET = Collections.emptyMap();
 
-	private DatagenConnectorConfig config;
+	private WaterServicesConnectorConfig config;
 	private String topic;
 	private int maxRecords;
 	private long count = 0L;
@@ -91,7 +91,7 @@ public class DatagenTask extends SourceTask {
 
 	@Override
 	public void start(Map<String, String> props) {
-		config = new DatagenConnectorConfig(props);
+		config = new WaterServicesConnectorConfig(props);
 		topic = config.getKafkaTopic();
 		maxRecords = config.getIterations();
 		schemaFilename = config.getSchemaFilename();
@@ -240,4 +240,4 @@ public class DatagenTask extends SourceTask {
 		}
 	}
 
-} // DatagenTask
+} // WaterServicesTask

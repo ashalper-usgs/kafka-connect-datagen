@@ -23,7 +23,7 @@ import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.common.config.ConfigDef.Type;
 import org.apache.kafka.common.config.ConfigDef.Importance;
 
-public class DatagenConnectorConfig extends AbstractConfig {
+public class WaterServicesConnectorConfig extends AbstractConfig {
 
   public static final String KAFKA_TOPIC_CONF = "kafka.topic";
   private static final String KAFKA_TOPIC_DOC = "Topic to write to";
@@ -39,11 +39,11 @@ public class DatagenConnectorConfig extends AbstractConfig {
   public static final String ENTITY_CONF = "quickstart";
   private static final String ENTITY_DOC = "Name of quickstart to use";
 
-  public DatagenConnectorConfig(ConfigDef config, Map<String, String> parsedConfig) {
+  public WaterServicesConnectorConfig(ConfigDef config, Map<String, String> parsedConfig) {
     super(config, parsedConfig);
   }
 
-  public DatagenConnectorConfig(Map<String, String> parsedConfig) {
+  public WaterServicesConnectorConfig(Map<String, String> parsedConfig) {
     this(conf(), parsedConfig);
   }
 
@@ -81,4 +81,4 @@ public class DatagenConnectorConfig extends AbstractConfig {
     return this.getString(ENTITY_CONF);
   }
 
-} // DatagenConnectorConfig
+} // WaterServicesConnectorConfig

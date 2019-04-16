@@ -26,23 +26,23 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class DatagenConnectorTest {
+public class WaterServicesConnectorTest {
 
   private static final String TOPIC = "my-topic";
   private static final int NUM_MESSAGES = 100;
   private static final int MAX_INTERVAL_MS = 0;
 
   private Map<String, String> config;
-  private DatagenConnector connector;
+  private WaterServicesConnector connector;
 
   @Before
   public void setUp() throws Exception {
     config = new HashMap<>();
-    config.put(DatagenConnectorConfig.KAFKA_TOPIC_CONF, TOPIC);
-    config.put(DatagenConnectorConfig.ITERATIONS_CONF, Integer.toString(NUM_MESSAGES));
-    config.put(DatagenConnectorConfig.MAXINTERVAL_CONF, Integer.toString(MAX_INTERVAL_MS));
-    config.put(DatagenConnectorConfig.ENTITY_CONF, DatagenTask.Entity.USERS.name());
-    connector = new DatagenConnector();
+    config.put(WaterServicesConnectorConfig.KAFKA_TOPIC_CONF, TOPIC);
+    config.put(WaterServicesConnectorConfig.ITERATIONS_CONF, Integer.toString(NUM_MESSAGES));
+    config.put(WaterServicesConnectorConfig.MAXINTERVAL_CONF, Integer.toString(MAX_INTERVAL_MS));
+    config.put(WaterServicesConnectorConfig.ENTITY_CONF, WaterServicesTask.Entity.USERS.name());
+    connector = new WaterServicesConnector();
   }
 
   @After
@@ -72,4 +72,4 @@ public class DatagenConnectorTest {
     }
   }
 
-} // DatagenConnectorTest
+} // WaterServicesConnectorTest
