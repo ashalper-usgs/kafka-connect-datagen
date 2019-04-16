@@ -24,20 +24,23 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-import io.confluent.avro.random.generator.Generator;
-import io.confluent.connect.avro.AvroData;
 import org.apache.avro.generic.GenericData.Record;
 import org.apache.avro.generic.GenericRecord;
+
+import org.apache.kafka.connect.data.Field;
+import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.SchemaAndValue;
+import org.apache.kafka.connect.data.SchemaBuilder;
+import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.kafka.connect.source.SourceTask;
-import org.apache.kafka.connect.data.Schema;
-import org.apache.kafka.connect.data.SchemaBuilder;
-import org.apache.kafka.connect.data.Struct;
-import org.apache.kafka.connect.data.Field;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.confluent.avro.random.generator.Generator;
+import io.confluent.connect.avro.AvroData;
 
 public class DatagenTask extends SourceTask {
 
@@ -54,22 +57,21 @@ public class DatagenTask extends SourceTask {
 	private long count = 0L;
 	private String schemaFilename;
 	private String schemaKeyField;
-	private Quickstart quickstart;
+	private Entity entity;
 	private Generator generator;
 	private org.apache.avro.Schema avroSchema;
 	private org.apache.kafka.connect.data.Schema ksqlSchema;
 	private AvroData avroData;
 
-	protected enum Quickstart {
-		CLICKSTREAM_CODES("clickstream_codes_schema.avro", "code"), CLICKSTREAM("clickstream_schema.avro", "ip"),
-		CLICKSTREAM_USERS("clickstream_users_schema.avro", "user_id"), ORDERS("orders_schema.avro", "orderid"),
-		RATINGS("ratings_schema.avro", "rating_id"), USERS("users_schema.avro", "userid"),
-		USERS_("users_array_map_schema.avro", "userid"), PAGEVIEWS("pageviews_schema.avro", "viewtime");
+	protected enum Entity {
+		// TODO: SITE key is really (agency_cd,site_no)
+		USERS("users_schema.avro", "userid"), PAGEVIEWS("pageviews_schema.avro", "viewtime"),
+		SITE("site.avro", "site_no");
 
 		private final String schemaFilename;
 		private final String keyName;
 
-		Quickstart(String schemaFilename, String keyName) {
+		Entity(String schemaFilename, String keyName) {
 			this.schemaFilename = schemaFilename;
 			this.keyName = keyName;
 		}
@@ -97,16 +99,16 @@ public class DatagenTask extends SourceTask {
 		schemaFilename = config.getSchemaFilename();
 		schemaKeyField = config.getSchemaKeyfield();
 
-		String quickstartName = config.getQuickstart();
-		if (quickstartName != "") {
+		String entityName = config.getEntity();
+		if (entityName != "") {
 			try {
-				quickstart = Quickstart.valueOf(quickstartName.toUpperCase());
-				if (quickstart != null) {
-					schemaFilename = quickstart.getSchemaFilename();
-					schemaKeyField = quickstart.getSchemaKeyField();
+				entity = Entity.valueOf(entityName.toUpperCase());
+				if (entity != null) {
+					schemaFilename = entity.getSchemaFilename();
+					schemaKeyField = entity.getSchemaKeyField();
 				}
 			} catch (IllegalArgumentException e) {
-				log.warn("Quickstart '{}' not found: ", quickstartName, e);
+				log.warn("Entity '{}' not found: ", entityName, e);
 			}
 		}
 
@@ -136,6 +138,7 @@ public class DatagenTask extends SourceTask {
 			}
 		}
 
+		// TODO: factor out this bit
 		final Object generatedObject = generator.generate();
 		if (!(generatedObject instanceof GenericRecord)) {
 			throw new RuntimeException(String.format(
