@@ -1,5 +1,6 @@
 package io.confluent.kafka.connect.datagen;
 
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -11,18 +12,10 @@ import org.junit.Test;
 
 public class DatagenTaskTest {
 
-	DatagenTask task = new DatagenTask();
+	static DatagenTask task = new DatagenTask();
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-	}
-
-	@Before
-	public void setUp() throws Exception {
-	}
-
-	@Test
-	public final void testStart() {
 		@SuppressWarnings("unchecked")
 		Map<String, String> props = mock(Map.class);
 		
@@ -30,6 +23,19 @@ public class DatagenTaskTest {
 		when(props.containsKey("kafka.topic")).thenReturn(true);
 		
 		task.start(props);
+	}
+
+	@Before
+	public void setUp() throws Exception {
+	}
+
+	@Test
+	public final void testPoll() {
+		try {
+			task.poll();
+		} catch (InterruptedException e) {
+			fail(e.getMessage());
+		}
 	}
 	
 	@Test
@@ -39,11 +45,6 @@ public class DatagenTaskTest {
 
 	@Test
 	public final void testVersion() {
-		return;
-	}
-
-	@Test
-	public final void testPoll() {
 		return;
 	}
 
