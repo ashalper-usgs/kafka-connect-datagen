@@ -136,7 +136,7 @@ public class WaterServicesTask extends SourceTask {
 	@Override
 	public List<SourceRecord> poll() throws InterruptedException {
 
-		if (responseCode != HttpURLConnection.HTTP_OK)
+		if (responseCode == HttpURLConnection.HTTP_OK)
 			return null;
 
 		InputStream stream;
@@ -161,12 +161,32 @@ public class WaterServicesTask extends SourceTask {
 		final List<SourceRecord> records = new ArrayList<>();
 		
 		try {
+			String[] columnName;
+			
+			// skip RDB header block
+			// TODO: see if it's appropriate to put all or part of header block in
+			// ConnectHeaders of records[i]
+			while ((columnName = csvReader.readNext())[0].startsWith("#"));
+
+			// skip data type row
+			csvReader.readNext();
+
 			String[] field;
 			while ((field = csvReader.readNext()) != null) {
 				final GenericRecord message = new Record(avroSchema);
-				final List<Object> genericRowValues = new ArrayList<>();
 				
-				// TODO: seems like we can put schema code outside while loop
+				int i = 0;
+				for (org.apache.avro.Schema.Field schemaField : avroSchema.getFields()) {
+					if (schemaField.schema().getType() == org.apache.avro.Schema.Type.DOUBLE) {
+						message.put(columnName[i], Double.parseDouble(field[i]));
+					} else {
+						message.put(columnName[i], field[i]);
+					}
+					i++;
+				}
+				
+				// TODO: not sure if this is necessary
+				final List<Object> genericRowValues = new ArrayList<>();
 				for (org.apache.avro.Schema.Field schemaField : avroSchema.getFields()) {
 					final Object value = message.get(schemaField.name());
 					if (value instanceof Record) {
@@ -188,19 +208,6 @@ public class WaterServicesTask extends SourceTask {
 				}
 
 				// Value
-				// TODO: we can parse these column names from RDB header row
-				message.put("agency_cd", field[0]);
-				message.put("site_no", field[1]);
-				message.put("station_nm", field[2]);
-				message.put("site_tp_cd", field[3]);
-				message.put("dec_lat_va", Double.parseDouble(field[4]));
-				message.put("dec_long_va", Double.parseDouble(field[5]));
-				message.put("coord_acy_cd", field[6]);
-				message.put("dec_coord_datum_cd", field[7]);
-				message.put("alt_va", field[8]);
-				message.put("alt_acy_va", ".1");
-				message.put("alt_datum_cd", field[9]);
-				message.put("huc_cd", field[10]);
 				final Object messageValue = avroData.toConnectData(avroSchema, message).value();
 
 				SourceRecord record = new SourceRecord(SOURCE_PARTITION, SOURCE_OFFSET, topic, KEY_SCHEMA, keyString,
