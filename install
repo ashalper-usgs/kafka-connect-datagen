@@ -1,0 +1,21 @@
+#! /bin/sh
+#
+#  File - install
+#
+#  Purpose - Convenience script for installing assembly.
+#
+#  Author - Andrew Halper <ashalper@usgs.gov>
+#
+
+git pull
+mvn clean package
+
+cp \
+    target/components/packages/confluentinc-kafka-connect-datagen-0.2-SNAPSHOT.zip \
+    /usr/share/confluent-hub-components/
+
+rm -rf \
+   /usr/share/confluent-hub-components/confluentinc-kafka-connect-datagen-0.2-SNAPSHOT
+
+cd /usr/share/confluent-hub-components/ && \
+    unzip confluentinc-kafka-connect-datagen-0.2-SNAPSHOT.zip
