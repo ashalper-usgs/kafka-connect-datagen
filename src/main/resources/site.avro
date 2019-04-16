@@ -19,10 +19,10 @@
             "type": "string"
         }},
 	{"name": "dec_lat_va", "type": {
-            "type": "long"
+            "type": "double"
         }},
 	{"name": "dec_long_va", "type": {
-            "type": "long"
+            "type": "double"
         }},
 	{"name": "coord_acy_cd", "type": {
             "type": "string"
