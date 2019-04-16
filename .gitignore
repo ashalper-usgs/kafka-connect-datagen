@@ -1,11 +1,12 @@
-target/*
-
 # IntelliJ data
 *.iml
 .idea/
 .ipr
+# eclipse detritus
 /target/
 /.project
 /.classpath
 /.checkstyle
 /.settings/
+# Emacs back-up files
+/*~
