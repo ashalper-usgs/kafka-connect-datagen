@@ -52,9 +52,9 @@ public class DatagenConnectorConfig extends AbstractConfig {
         .define(KAFKA_TOPIC_CONF, Type.STRING, Importance.HIGH, KAFKA_TOPIC_DOC)
         .define(MAXINTERVAL_CONF, Type.LONG, 100L, Importance.HIGH, MAXINTERVAL_DOC)
         .define(ITERATIONS_CONF, Type.INT, 1000000000, Importance.HIGH, ITERATIONS_DOC)
-        .define(SCHEMA_FILENAME_CONF, Type.STRING, "", Importance.HIGH, SCHEMA_FILENAME_DOC)
-        .define(SCHEMA_KEYFIELD_CONF, Type.STRING, "", Importance.HIGH, SCHEMA_KEYFIELD_DOC)
-        .define(ENTITY_CONF, Type.STRING, "", Importance.HIGH, ENTITY_DOC);
+        .define(SCHEMA_FILENAME_CONF, Type.STRING, "site.avro", Importance.HIGH, SCHEMA_FILENAME_DOC)
+        .define(SCHEMA_KEYFIELD_CONF, Type.STRING, "site_no", Importance.HIGH, SCHEMA_KEYFIELD_DOC)
+        .define(ENTITY_CONF, Type.STRING, "site", Importance.HIGH, ENTITY_DOC);
   }
 
   public String getKafkaTopic() {
