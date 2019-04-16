@@ -71,49 +71,19 @@ public class DatagenTaskTest {
 	}
 
 	@Test
-	public void shouldGenerateFilesForClickstreamCodesQuickstart() throws Exception {
-		generateAndValidateRecordsFor(DatagenTask.Quickstart.CLICKSTREAM_CODES);
-	}
-
-	@Test
-	public void shouldGenerateFilesForClickstreamUsersQuickstart() throws Exception {
-		generateAndValidateRecordsFor(DatagenTask.Quickstart.CLICKSTREAM_USERS);
-	}
-
-	@Test
-	public void shouldGenerateFilesForClickstreamQuickstart() throws Exception {
-		generateAndValidateRecordsFor(DatagenTask.Quickstart.CLICKSTREAM);
-	}
-
-	@Test
-	public void shouldGenerateFilesForOrdersQuickstart() throws Exception {
-		generateAndValidateRecordsFor(DatagenTask.Quickstart.ORDERS);
-	}
-
-	@Test
-	public void shouldGenerateFilesForRatingsQuickstart() throws Exception {
-		generateAndValidateRecordsFor(DatagenTask.Quickstart.RATINGS);
-	}
-
-	@Test
 	public void shouldGenerateFilesForUsersQuickstart() throws Exception {
-		generateAndValidateRecordsFor(DatagenTask.Quickstart.USERS);
-	}
-
-	@Test
-	public void shouldGenerateFilesForUsers2Quickstart() throws Exception {
-		generateAndValidateRecordsFor(DatagenTask.Quickstart.USERS_);
+		generateAndValidateRecordsFor(DatagenTask.Entity.USERS);
 	}
 
 	@Test
 	public void shouldGenerateFilesForPageviewsQuickstart() throws Exception {
-		generateAndValidateRecordsFor(DatagenTask.Quickstart.PAGEVIEWS);
+		generateAndValidateRecordsFor(DatagenTask.Entity.PAGEVIEWS);
 	}
 
 	@Test
 	public void shouldFailToGenerateMoreRecordsThanSpecified() throws Exception {
 		// Generate the expected number of records
-		createTaskWith(DatagenTask.Quickstart.USERS);
+		createTaskWith(DatagenTask.Entity.USERS);
 		generateRecords();
 		assertRecordsMatchSchemas();
 
@@ -137,13 +107,13 @@ public class DatagenTaskTest {
 		}
 	}
 
-	private void generateAndValidateRecordsFor(DatagenTask.Quickstart quickstart) throws Exception {
-		createTaskWith(quickstart);
+	private void generateAndValidateRecordsFor(DatagenTask.Entity entity) throws Exception {
+		createTaskWith(entity);
 		generateRecords();
 		assertRecordsMatchSchemas();
 
 		// Do the same thing with schema file
-		createTaskWithSchema(quickstart.getSchemaFilename(), quickstart.getSchemaKeyField());
+		createTaskWithSchema(entity.getSchemaFilename(), entity.getSchemaKeyField());
 		generateRecords();
 		assertRecordsMatchSchemas();
 	}
@@ -218,10 +188,10 @@ public class DatagenTaskTest {
 		}
 	}
 
-	private void createTaskWith(DatagenTask.Quickstart quickstart) {
-		config.put(DatagenConnectorConfig.QUICKSTART_CONF, quickstart.name().toLowerCase(Locale.getDefault()));
+	private void createTaskWith(DatagenTask.Entity entity) {
+		config.put(DatagenConnectorConfig.ENTITY_CONF, entity.name().toLowerCase(Locale.getDefault()));
 		createTask();
-		loadKeyAndValueSchemas(quickstart.getSchemaFilename(), quickstart.getSchemaKeyField());
+		loadKeyAndValueSchemas(entity.getSchemaFilename(), entity.getSchemaKeyField());
 	}
 
 	private void createTaskWithSchema(String schemaResourceFilename, String idFieldName) {
