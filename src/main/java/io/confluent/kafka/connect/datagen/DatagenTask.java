@@ -117,8 +117,11 @@ public class DatagenTask extends SourceTask {
 		}
 
 		avroSchema = generator.schema();
+		log.info("avroSchema = {}", avroSchema.toString());
 		avroData = new AvroData(1);
+		log.info("avroData = {}", avroData.toString());
 		ksqlSchema = avroData.toConnectSchema(avroSchema);
+		log.info("ksqlSchema = {}", ksqlSchema.toString());
 	}
 
 	@Override
