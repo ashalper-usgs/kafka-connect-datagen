@@ -36,8 +36,8 @@ public class DatagenConnectorConfig extends AbstractConfig {
   private static final String SCHEMA_FILENAME_DOC = "Filename of schema to use";
   public static final String SCHEMA_KEYFIELD_CONF = "schema.keyfield";
   private static final String SCHEMA_KEYFIELD_DOC = "Name of field to use as the message key";
-  public static final String QUICKSTART_CONF = "quickstart";
-  private static final String QUICKSTART_DOC = "Name of quickstart to use";
+  public static final String ENTITY_CONF = "quickstart";
+  private static final String ENTITY_DOC = "Name of quickstart to use";
 
   public DatagenConnectorConfig(ConfigDef config, Map<String, String> parsedConfig) {
     super(config, parsedConfig);
@@ -54,7 +54,7 @@ public class DatagenConnectorConfig extends AbstractConfig {
         .define(ITERATIONS_CONF, Type.INT, 1000000000, Importance.HIGH, ITERATIONS_DOC)
         .define(SCHEMA_FILENAME_CONF, Type.STRING, "", Importance.HIGH, SCHEMA_FILENAME_DOC)
         .define(SCHEMA_KEYFIELD_CONF, Type.STRING, "", Importance.HIGH, SCHEMA_KEYFIELD_DOC)
-        .define(QUICKSTART_CONF, Type.STRING, "", Importance.HIGH, QUICKSTART_DOC);
+        .define(ENTITY_CONF, Type.STRING, "", Importance.HIGH, ENTITY_DOC);
   }
 
   public String getKafkaTopic() {
@@ -77,8 +77,8 @@ public class DatagenConnectorConfig extends AbstractConfig {
     return this.getString(SCHEMA_KEYFIELD_CONF);
   }
 
-  public String getQuickstart() {
-    return this.getString(QUICKSTART_CONF);
+  public String getEntity() {
+    return this.getString(ENTITY_CONF);
   }
 
 } // DatagenConnectorConfig
